@@ -16,10 +16,14 @@
 
 package com.lightbend.rp.reactivecli
 
+import java.nio.file.{Files, Paths, StandardOpenOption}
+
 import libhttpsimple.LibHttpSimple
 import scopt.OptionParser
 import argonaut._
 import Argonaut._
+import scala.collection.mutable
+import scala.collection.JavaConverters._
 
 object Main {
   case class InputArgs(foo: Option[String] = None)
@@ -56,6 +60,30 @@ object Main {
     println(response)
 
     LibHttpSimple.globalCleanup()
+
+    println("File I/O")
+    val testDir = Paths.get("/tmp/bar")
+    val testFile = testDir.resolve("test.txt")
+
+    println(s"File I/O - delete file if exists: ${testDir.toAbsolutePath}")
+    Files.deleteIfExists(testFile)
+
+    println(s"File I/O - delete dir if exists: ${testDir.toAbsolutePath}")
+    Files.deleteIfExists(testDir)
+
+    println(s"File I/O - create dir: ${testDir.toAbsolutePath}")
+    Files.createDirectories(testDir)
+
+    println(s"File I/O - write file: ${testFile.toAbsolutePath}")
+    val textContent =
+      """this is a test
+         |and this
+         |and also this
+         |""".stripMargin
+    Files.write(testFile, textContent.getBytes(), StandardOpenOption.CREATE_NEW, StandardOpenOption.APPEND)
+
+    val writtenLine = Files.readAllLines(testFile).asScala
+    println(s"File I/O - content: ${writtenLine.mkString("\n")}")
   }
 
   def main(args: Array[String]): Unit = {
